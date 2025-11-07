@@ -1,0 +1,9 @@
+package messages;
+
+public enum MsgType {
+    KARTE, KARTE_OK, KARTE_NICHTOK,
+    PIN, PIN_OK, PIN_NICHTOK,
+    ANFRAGE_KONTOSTAND, KONTOSTAND,
+    ABHEBEN, ABHEBEN_OK, ABHEBEN_NICHTOK, DATA, TEXT
+}   
+
