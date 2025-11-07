@@ -5,18 +5,24 @@ import java.net.*;
 import messages.Message;
 import messages.MsgHeader;
 import messages.MsgType;
+import messages.request.PinMessage;
+import messages.response.PinOkMessage;
 import coded.SimpleTextCodec;
-import messages.Text;
 
 public class TCPServerMain {
     public static void main(String argv[]) throws Exception {
+
+        // hardcoded for MsgType.PIN
+        // TODO cascading cases, that send, check and answer messages
+        // TODO according to protocol-timeline e.g. only if(PIN_OK) its possible to send
+        // KontostandMessage
         String clientEncoded;
-        String clientSentence;
-        String capitalizedSentence;
+        StringBuilder clientEncodedBuilder;
+        int clientPin;
         String encodedResponse;
         SimpleTextCodec codec = new SimpleTextCodec();
         Message clientMessage;
-        Text response;
+        Message response;
 
         ServerSocket welcomeSocket = new ServerSocket(6789);
         System.out.println("Warte auf Client...");
@@ -32,20 +38,33 @@ public class TCPServerMain {
             BufferedWriter outToClient = new BufferedWriter(new OutputStreamWriter(
                     connectionSocket.getOutputStream()));
 
-            clientEncoded = inFromClient.readLine();
+            clientEncodedBuilder = new StringBuilder();
+            String line;
+            while ((line = inFromClient.readLine()) != "") {
+
+                //usually you check if(line.isEmpty()) and break; but our messages are defined as header CRLF CRLF body 
+                //which produces an empty line. This would cause the body not beeing read
+                clientEncodedBuilder.append(line).append("\r\n");
+            }
+
+            clientEncoded = clientEncodedBuilder.toString();
+
+            System.out.println("In from Client (encoded): " + clientEncoded); // TODO only reads first line and ignores
+                                                                              // everything else
 
             clientMessage = codec.decode(clientEncoded);
-            clientSentence = ((Text) clientMessage).text();
+            System.out.println("In from Client (decoded):\n" + clientMessage);
 
-            System.out.println("In from client:\n" + clientMessage.toString());
+            clientPin = ((PinMessage) clientMessage).pin();
 
-            capitalizedSentence = clientSentence.toUpperCase();
-            response = new Text(new MsgHeader(1, MsgType.TEXT, "0", "0"), capitalizedSentence);
+            // logic to check pin
+
+            response = new PinOkMessage(new MsgHeader(1, MsgType.PIN_OK, "0", "0", System.currentTimeMillis()));
             encodedResponse = codec.encode(response);
 
-            System.out.println("Out to Client:\n" + response);
+            System.out.println("Out to Client:\n" + encodedResponse);
 
-            outToClient.write(encodedResponse +'\n');
+            outToClient.write(encodedResponse + '\n');
             outToClient.flush();
 
         }

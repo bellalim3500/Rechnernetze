@@ -7,7 +7,7 @@ import coded.SimpleTextCodec;
 import messages.Message;
 import messages.MsgHeader;
 import messages.MsgType;
-import messages.Text;
+import messages.request.PinMessage;
 
 class TCPClient {
 
@@ -18,7 +18,7 @@ class TCPClient {
         String encodedMsg;
         String encodedResponse;
         Message response;
-        Text msg;
+        Message request;
 
         // create codec
         SimpleTextCodec codec = new SimpleTextCodec();
@@ -39,14 +39,17 @@ class TCPClient {
 
         // read message and create Message-Object which then is encoded
         System.out.println("Message?");
-        msgString = inFromUser.readLine();
-        msg = new Text(new MsgHeader(1, MsgType.TEXT, "0", "0"), msgString); // Hardcoded for msgType.TEXT. TODO needs to be changed
-        encodedMsg = codec.encode(msg);
+        //msgString = inFromUser.readLine();
+        int pinInt = Integer.parseInt(inFromUser.readLine());
+        
+        request = new PinMessage(new MsgHeader(1, MsgType.PIN, "0", "0", System.currentTimeMillis()), pinInt); // Hardcoded for msgType.TEXT. TODO needs to be changed
+        System.out.println("Message to decode:\n " + request);
 
-        System.out.println("Out to Server:\n" + msg.toString());
+        encodedMsg = codec.encode(request);
+        System.out.println("Out to Server (encoded):\n" + encodedMsg);
 
         // send encoded String + '\n' to signal end of String
-        outToServer.write(encodedMsg + '\n');
+        outToServer.write(encodedMsg + "\n");
         outToServer.flush();
 
         // recieve and decode response from server

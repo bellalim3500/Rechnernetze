@@ -20,70 +20,65 @@ import messages.response.PinOkMessage;
 public final class SimpleTextCodec {
 
     public String encode(Message msg) {
-        String body;
-        String header;
-
-        header = msg.header().toString();
-        System.out.println(header);
+        String msgString;
+        
 
         if (msg instanceof AbhebenReqMessage) {
             AbhebenReqMessage d = (AbhebenReqMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
 
         } else if (msg instanceof ByeMessage) {
             ByeMessage d = (ByeMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         } else if (msg instanceof HelloMessage) {
             HelloMessage d = (HelloMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         } else if (msg instanceof KarteMessage) {
             KarteMessage d = (KarteMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         } else if (msg instanceof KontostandReqMessage) {
             KontostandReqMessage d = (KontostandReqMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         } else if (msg instanceof PinMessage) {
             PinMessage d = (PinMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         } else if (msg instanceof AbhebenOkMessage) {
             AbhebenOkMessage d = (AbhebenOkMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         } else if (msg instanceof ErrorMessage) {
             ErrorMessage d = (ErrorMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         } else if (msg instanceof KarteOkMessage) {
             KarteOkMessage d = (KarteOkMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         } else if (msg instanceof KontostandMessage) {
             KontostandMessage d = (KontostandMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         } else if (msg instanceof PinOkMessage) {
             PinOkMessage d = (PinOkMessage) msg;
-            body = d.toString();
-            return header + body;
+            msgString = d.toString();
+            return  msgString;
         }
         throw new IllegalArgumentException("Unsupported message type:" + msg.getClass());
     }
 
     public Message decode(String s) {
 
-        System.out.println(s);
 
         MsgHeader header;
         Message msg = null;
 
-        String[] parts = s.split("\r\n\r\n"); 
-        System.out.println(parts[0]);// should be 2 (header SP body); split at \r\n\r\n
+        String[] parts = s.split("\r\n\r\n"); // should be 2 (header SP body); split at \r\n\r\n
         String headerLines[] = parts[0].split("\r\n"); // splits lines of header
         String bodyLines[] = parts[1].split("\r\n"); // splits lines of body
 
@@ -125,7 +120,7 @@ public final class SimpleTextCodec {
                     correlationId = headerFields[1];
                     break;
                 case "Timestamp in Millis":
-                    timestampMillis = Long.parseLong(headerFields[1]);
+                    timestampMillis = System.currentTimeMillis();
                     break;
                 default:
                     throw new Exception("Unsupported Header-Field");
@@ -164,6 +159,7 @@ public final class SimpleTextCodec {
                 case "HELLO":
                     text = String.join(" ", bodyFields);
                     msg = new HelloMessage(header, text);
+                    break;
                 case "KARTE":
                     card = bodyFields[0];
                     msg = new KarteMessage(header, card);

@@ -19,13 +19,13 @@ public class PinMessage implements Message {
         return header;
     }
 
-    public int card() {
+    public int pin() {
         return pin;
     }
 
     @Override
     public String toString() {
-        return String.format("PIN %d\r\n", pin); // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return header.toString() + String.format("PIN %d\r\n", pin); // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }
