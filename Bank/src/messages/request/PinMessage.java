@@ -28,7 +28,7 @@ public class PinMessage implements Message{
 
     @Override
     public String toString() {
-        return "PIN " + pin + "\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+         return String.format("PIN %d\r\n", pin);  // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }

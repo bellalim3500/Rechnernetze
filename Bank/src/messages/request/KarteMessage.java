@@ -1,5 +1,6 @@
 package messages.request;
 
+
 import messages.Message;
 import messages.MsgHeader;
 
@@ -28,7 +29,7 @@ public class KarteMessage  implements Message {
 
     @Override
     public String toString() {
-        return "KARTE " + card + "\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+       return String.format("KARTe %s\r\n", card);  // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }

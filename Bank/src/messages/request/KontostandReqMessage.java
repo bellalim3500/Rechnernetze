@@ -26,7 +26,7 @@ public class KontostandReqMessage implements Message {
 
     @Override
     public String toString() {
-        return "KONTOSTAND_REQ " + card + "\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("KONTOSTAND_REQ  %s\r\n", card);  // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }

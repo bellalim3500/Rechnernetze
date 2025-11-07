@@ -1,5 +1,6 @@
 package messages.response;
 
+
 import messages.Message;
 import messages.MsgHeader;
 
@@ -17,7 +18,7 @@ public class PinOkMessage implements Message {
 
     @Override
     public String toString() {
-        return "PIN_OK\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("PIN_OK\r\n"); // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }

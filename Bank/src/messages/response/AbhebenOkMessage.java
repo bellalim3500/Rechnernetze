@@ -24,7 +24,7 @@ public class AbhebenOkMessage implements Message {
 
     @Override
     public String toString() {
-        return "ABHEBEN_OK DISPENSED " + amount + "\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+         return String.format("ABHEBEN_OK DISPENSED %.2f\r\n", amount);  // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }

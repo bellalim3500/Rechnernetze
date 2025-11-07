@@ -23,7 +23,7 @@ public class KontostandMessage implements Message {
 
     @Override
     public String toString() {
-        return "KONTOSTAND" + amount + "\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("KONTOSTAND %.2f\r\n", amount); // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }

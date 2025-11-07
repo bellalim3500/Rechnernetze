@@ -23,7 +23,7 @@ public class ErrorMessage implements Message {
 
     @Override
     public String toString() {
-        return "ERROR" + reason + "\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("ERROR %s\r\n", reason);// according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }

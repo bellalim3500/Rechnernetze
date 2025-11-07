@@ -5,15 +5,15 @@ public class MsgHeader {
     private final MsgType type;
     private final String msgId;
     private final String correlationId;
-     //private final long timestampMillis;
+    private final long timestampMillis;
 
 
-    public MsgHeader(int version, MsgType type, String msgId, String correlationId) {
+    public MsgHeader(int version, MsgType type, String msgId, String correlationId, long timestampMillis) {
         this.version = version;
         this.type = type;
         this.msgId = msgId;
         this.correlationId = correlationId;
-       // this.timestampMillis = timestampMillis; 
+        this.timestampMillis = timestampMillis; 
        // not used because of unit test (fails because of different timestamps)
     }
 
@@ -33,10 +33,14 @@ public class MsgHeader {
         return correlationId;
     }
 
+    public long timestampMillis(){
+        return timestampMillis;
+    }
+
     @Override
     public String toString() {
-        return "version=" + version + ", type=" + type + ", msgId=" + msgId + ", correlationId="
-                + correlationId;
+        return "Version: " + version +  "\r\n" +"Type: " + type +  "\r\n" + "MsgId: " + msgId +  "\r\n" + 
+        "CorrelationId: "+ correlationId+ "\r\n" +"Timestamp in Millis: " + timestampMillis +"\r\n\r\n";
     }
 
     

@@ -25,7 +25,7 @@ public class ByeMessage implements Message {
 
     @Override
     public String toString() {
-        return "BYE " + text + "\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("BYE %s\r\n", text); // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
     

@@ -17,7 +17,7 @@ public class KarteOkMessage implements Message {
 
     @Override
     public String toString() {
-        return "KARTE_OK\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("KARTE_OK\r\n");// according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }

@@ -24,7 +24,7 @@ public class HelloMessage  implements Message{
 
     @Override
     public String toString() {
-        return "HELLO " + text + "\r\n"; // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("HELLO %s\r\n", text); // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
     
