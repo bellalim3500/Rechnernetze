@@ -1,10 +1,10 @@
 package coded;
 
-import messages.Data;
+import java.util.Arrays;
+
 import messages.Message;
 import messages.MsgHeader;
 import messages.MsgType;
-import messages.Text;
 import messages.request.AbhebenReqMessage;
 import messages.request.ByeMessage;
 import messages.request.HelloMessage;
@@ -18,109 +18,189 @@ import messages.response.KontostandMessage;
 import messages.response.PinOkMessage;
 
 public final class SimpleTextCodec {
-    private String body;
-    private String header;
-    private String encodedMessage;
 
     public String encode(Message msg) {
+        String body;
+        String header;
 
         header = msg.header().toString();
+        System.out.println(header);
 
         if (msg instanceof AbhebenReqMessage) {
             AbhebenReqMessage d = (AbhebenReqMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
+            return header + body;
 
         } else if (msg instanceof ByeMessage) {
             ByeMessage d = (ByeMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
+            return header + body;
         } else if (msg instanceof HelloMessage) {
             HelloMessage d = (HelloMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
+            return header + body;
         } else if (msg instanceof KarteMessage) {
             KarteMessage d = (KarteMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
+            return header + body;
         } else if (msg instanceof KontostandReqMessage) {
             KontostandReqMessage d = (KontostandReqMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
-        }else if (msg instanceof PinMessage) {
+            return header + body;
+        } else if (msg instanceof PinMessage) {
             PinMessage d = (PinMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
+            return header + body;
         } else if (msg instanceof AbhebenOkMessage) {
             AbhebenOkMessage d = (AbhebenOkMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
+            return header + body;
         } else if (msg instanceof ErrorMessage) {
             ErrorMessage d = (ErrorMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
+            return header + body;
         } else if (msg instanceof KarteOkMessage) {
             KarteOkMessage d = (KarteOkMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
-        }else if (msg instanceof KontostandMessage) {
+            return header + body;
+        } else if (msg instanceof KontostandMessage) {
             KontostandMessage d = (KontostandMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
+            return header + body;
         } else if (msg instanceof PinOkMessage) {
             PinOkMessage d = (PinOkMessage) msg;
             body = d.toString();
-            return encodedMessage = header + body;
+            return header + body;
         }
         throw new IllegalArgumentException("Unsupported message type:" + msg.getClass());
     }
 
     public Message decode(String s) {
 
-        String[] parts = s.split(";");
-        String type = null, unit = null, msgId = null, correlationId = null, text = null;
-        double value = 0;
-        int version = 0;
+        System.out.println(s);
 
-        for (String part : parts) {
-            String[] kv = part.split("=", 2);
-            if (kv.length != 2)
+        MsgHeader header;
+        Message msg = null;
+
+        String[] parts = s.split("\r\n\r\n"); 
+        System.out.println(parts[0]);// should be 2 (header SP body); split at \r\n\r\n
+        String headerLines[] = parts[0].split("\r\n"); // splits lines of header
+        String bodyLines[] = parts[1].split("\r\n"); // splits lines of body
+
+        try {
+            header = constructHeader(headerLines);
+            msg = constructMessage(bodyLines, header);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return msg;
+
+    }
+
+    public MsgHeader constructHeader(String headerLines[]) throws Exception {
+
+        int version = 0;
+        MsgType type = null;
+        String msgId = null;
+        String correlationId = null;
+        long timestampMillis = 0;
+        MsgHeader header = null;
+
+        for (String part : headerLines) {
+            String[] headerFields = part.split(": ", 2); // from "Version: 1" to "Version" and "1" to isolate value
+            if (headerFields.length != 2)
                 continue;
-            switch (kv[0]) {
-                case "type":
-                    type = kv[1];
+            switch (headerFields[0]) {
+                case "Version":
+                    version = Integer.parseInt(headerFields[1]);
                     break;
-                case "correlationId":
-                    correlationId = kv[1];
+                case "Type":
+                    type = MsgType.valueOf(headerFields[1].toUpperCase());
                     break;
-                case "value":
-                    value = Double.parseDouble(kv[1]);
+                case "MsgId":
+                    msgId = headerFields[1];
                     break;
-                case "unit":
-                    unit = kv[1];
+                case "CorrelationId":
+                    correlationId = headerFields[1];
                     break;
-                case "msgId":
-                    msgId = kv[1];
-                    break;
-                case "version":
-                    version = Integer.parseInt(kv[1]);
-                    break;
-                case "text":
-                    text = kv[1];
+                case "Timestamp in Millis":
+                    timestampMillis = Long.parseLong(headerFields[1]);
                     break;
                 default:
-                    break;
+                    throw new Exception("Unsupported Header-Field");
             }
 
         }
-        MsgHeader h = new MsgHeader(version, MsgType.TEXT, msgId, correlationId);
+        header = new MsgHeader(version, type, msgId, correlationId, timestampMillis);
+        return header;
 
-        if (type.equals("DATA")) {
-            return new Data(h, value, unit);
-        } else if (type.equals("TEXT")) {
-            return new Text(h, text);
-        }
-        throw new IllegalArgumentException("Unknown type: " + type);
     }
 
+    public Message constructMessage(String bodyLines[], MsgHeader header) throws Exception {
+        String card = null;
+        double amount = 0;
+        String text = null;
+        int pin = 0;
+        String reason = null;
+        Message msg = null;
+
+        for (String part : bodyLines) {
+
+            String command = part.split(" ")[0];
+            String bodyFields[] = part.split(" ");
+            bodyFields = Arrays.copyOfRange(bodyFields, 1, bodyFields.length); // remove first word
+          
+            switch (command) {
+                case "ABHEBEN_REQ":
+                    card = bodyFields[0];
+                    amount = Double.parseDouble(bodyFields[1]);
+                    msg = new AbhebenReqMessage(header, card, amount);
+                    break;
+                case "BYE":
+                    text = String.join(" ", bodyFields);
+                    msg = new ByeMessage(header, text);
+                    break;
+                case "HELLO":
+                    text = String.join(" ", bodyFields);
+                    msg = new HelloMessage(header, text);
+                case "KARTE":
+                    card = bodyFields[0];
+                    msg = new KarteMessage(header, card);
+                    break;
+                case "KONTOSTAND_REQ":
+                    card = bodyFields[0];
+                    msg = new KontostandReqMessage(header, card);
+                    break;
+                case "PIN":
+                    pin = Integer.parseInt(bodyFields[1]);
+                    msg = new PinMessage(header, pin);
+                    break;
+                case "ABHEBEN_OK":
+                    amount = Double.parseDouble(bodyFields[1]);
+                    msg = new AbhebenOkMessage(header, amount);
+                    break;
+                case "ERROR":
+                    reason = String.join(" ", bodyFields);
+                    msg = new ErrorMessage(header, reason);
+                    break;
+                case "KARTE_OK":
+                    msg = new KarteOkMessage(header);
+                    break;
+                case "KONTOSTAND":
+                    amount = Double.parseDouble(bodyFields[1]);
+                    msg = new KontostandMessage(header, amount);
+                    break;
+                case "PIN_OK":
+                    msg = new PinOkMessage(header);
+                    break;
+                default:
+                    throw new Exception("Unsupported Body-Field");
+            }
+
+        }
+
+        return msg;
+
+    }
 }

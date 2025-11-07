@@ -13,28 +13,28 @@ reason = 1*(VCHAR / SP)
 text = 1*(VCHAR / SP)  
 
 //header
-version ="Version:" SP 1*DIGIT CRLF
-msg_id = "MsgId:" SP 1*(ALPHA /DIGIT) CRLF
-correlation_id = "CorrelationId:" SP 1*(ALPHA /DIGIT) CRLF
-msg_type = "Type:" SP ( hello / karte / pin / kontostand_r / abheben_r / bye /karte_ok / pin_ok  / abheben_ok / error ) CRLF
-timestamp = "Timestamp in Millis: " SP 1*DIGIT CRLF
+version ="Version:" SP 1*DIGIT SP CRLF
+msg_id = "MsgId:" SP 1*(ALPHA /DIGIT) SP CRLF
+correlation_id = "CorrelationId:" SP 1*(ALPHA /DIGIT) SP CRLF
+msg_type = "Type:" SP ( hello / karte / pin / kontostand_r / abheben_r / bye /karte_ok / pin_ok  / abheben_ok / error ) SP CRLF
+timestamp = "Timestamp in Millis: " SP 1*DIGIT SP CRLF
 
-header = version SP msg_id SP correlation_id SP  msg_type SP timestamp CRLF 
+header = version SP msg_id SP correlation_id SP  msg_type SP timestamp SP CRLF 
 
 //ABNF-rules for different msgTypes
 
-message = header CRLF CRLF body CRLF 
+message = header CRLF  CRLF body CRLF 
 body = request / response CRLF
 
 //request-messages
 request = hello / karte / pin / kontostand_r / abheben_r / bye
 
-hello ="HELLO" CRLF
+hello ="HELLO" SP text CRLF
 karte = "KARTE" SP card CRLF
-pin = "PIN" SP pin-format CRLF 
+pin-format = "PIN" SP pin CRLF 
 kontostand_req = "KONTOSTAND_REQ" SP card CRLF
 abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
-bye = "BYE" SP text CRLF
+bye = "BYE" SP text  CRLF
 
 //response-messages
 
@@ -42,9 +42,9 @@ response = karte_ok / pin_ok  / kontostand / abheben_ok / error
 
 karte_ok = "KARTE_OK" CRLF
 pin_ok ="PIN_OK" CRLF
-kontostand ="KONTOSTAND" SP amount CRLF
+kontostand ="KONTOSTAND" SP amount  CRLF
 abheben_ok = "ABHEBEN_OK" SP "DISPENSED" SP amount CRLF
-error = "ERROR" SP reason CRLF
+error = "ERROR" SP reason  CRLF
 
 
 

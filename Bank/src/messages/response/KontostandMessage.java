@@ -9,7 +9,7 @@ public class KontostandMessage implements Message {
 
     public KontostandMessage(MsgHeader header, double amount) {
         this.header = header;
-        this.amount=amount;
+        this.amount = amount;
     }// maybe constant using generalized bye-message instead of constructing it
 
     @Override
@@ -23,7 +23,8 @@ public class KontostandMessage implements Message {
 
     @Override
     public String toString() {
-        return String.format("KONTOSTAND %.2f\r\n", amount); // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("KONTOSTAND %.2f\r\n", amount); // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP
+                                                             // amount CRLF
     }
 
 }

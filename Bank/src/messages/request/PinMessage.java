@@ -3,16 +3,14 @@ package messages.request;
 import messages.Message;
 import messages.MsgHeader;
 
-public class PinMessage implements Message{
-   
+public class PinMessage implements Message {
 
     private final MsgHeader header;
     private final int pin;
-    
 
-    public PinMessage(MsgHeader header, int pin){
-        this.header=header;
-        this.pin=pin;
+    public PinMessage(MsgHeader header, int pin) {
+        this.header = header;
+        this.pin = pin;
 
     }
 
@@ -21,20 +19,13 @@ public class PinMessage implements Message{
         return header;
     }
 
-    
-    public int card(){
+    public int card() {
         return pin;
     }
 
     @Override
     public String toString() {
-         return String.format("PIN %d\r\n", pin);  // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("PIN %d\r\n", pin); // according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
     }
 
 }
-
-    
-
-
-    
-

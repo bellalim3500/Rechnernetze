@@ -13,7 +13,6 @@ class TCPClient {
 
     public static void main(String argv[]) throws Exception {
 
-       // testEncodeDecodeLoop();
 
         String msgString;
         String encodedMsg;
@@ -60,32 +59,5 @@ class TCPClient {
 
     }
 
-    // unit test for codec
-    // creates a test MsgHeader and Message of the specified msgType,
-    // encodes it and checks wether the original msg and the en- and decoded
-    // versions are equal
-
-    public static void testEncodeDecodeLoop() {
-        SimpleTextCodec codec = new SimpleTextCodec();
-        MsgHeader msgHeader = new MsgHeader(101, MsgType.TEXT, "mathi", "mathi");
-        Text msg = new Text(msgHeader, "mm");
-        Message decoded;
-
-        System.out.println(msg);
-        System.out.println(msg.toString());
-
-        String encoded = codec.encode(msg);
-        System.out.println(encoded);
-
-        decoded = codec.decode(encoded);
-        System.out.println(decoded);
-
-        if (msg.toString().equals(decoded.toString())) { // It's necessary to use toString(). I dont't know why since
-                                                         // msg and msg.toString() print exactly the same
-            System.out.printf("test passed");
-        } else {
-            System.out.printf("test failed");
-        }
-    }
-
+    
 }

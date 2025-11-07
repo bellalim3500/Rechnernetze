@@ -9,10 +9,10 @@ public class AbhebenReqMessage implements Message {
     private final String card;
     private final double amount;
 
-    public AbhebenReqMessage(MsgHeader header, String card, double amount){
-        this.header=header;
-        this.card=card;
-        this.amount=amount;
+    public AbhebenReqMessage(MsgHeader header, String card, double amount) {
+        this.header = header;
+        this.card = card;
+        this.amount = amount;
     }
 
     @Override
@@ -20,17 +20,18 @@ public class AbhebenReqMessage implements Message {
         return header;
     }
 
-    public String card(){
+    public String card() {
         return card;
     }
-    public double amount(){
+
+    public double amount() {
         return amount;
     }
 
-
     @Override
     public String toString() {
-        return String.format("ABHEBEN_REQ %s %.2f\r\n", card, amount);// according to ABNF abheben_req = "ABHEBEN_REQ" SP card SP amount CRLF
+        return String.format("ABHEBEN_REQ %s %.2f\r\n", card, amount);// according to ABNF abheben_req = "ABHEBEN_REQ"
+                                                                      // SP card SP amount CRLF
     }
 
 }
