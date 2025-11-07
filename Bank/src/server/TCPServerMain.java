@@ -24,7 +24,7 @@ public class TCPServerMain {
         while (true) {
 
             Socket connectionSocket = welcomeSocket.accept();
-            System.out.printf("Client hat sich verbunden: %s%n", connectionSocket.getRemoteSocketAddress());
+            System.out.printf("Client connected: %s%n", connectionSocket.getRemoteSocketAddress());
 
             BufferedReader inFromClient = new BufferedReader(new InputStreamReader(
                     connectionSocket.getInputStream()));
