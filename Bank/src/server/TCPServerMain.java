@@ -13,7 +13,7 @@ public class TCPServerMain {
     public static void main(String argv[]) throws Exception {
 
         // hardcoded for MsgType.PIN
-        // TODO cascading cases, that send, check and answer messages
+        // TODO cascading cases, that send, check and answer messages according to Client-Logic
         // TODO according to protocol-timeline e.g. only if(PIN_OK) its possible to send
         // KontostandMessage
         String clientEncoded;

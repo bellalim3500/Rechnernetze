@@ -22,8 +22,6 @@ class TCPClient {
 
     public static void main(String argv[]) throws Exception {
 
-        String userInput;
-        String msgString;
         String encodedMsg;
         String responseString;
         String menuInput;
@@ -38,6 +36,9 @@ class TCPClient {
         BufferedReader inFromServer;
         Socket clientSocket = new Socket("localhost", 6789);
         System.out.println("Client connected end with \"END\"");
+        byte [] encodedReq;
+        byte [] encodedRes;
+
 
         // user input
         inFromUser = new BufferedReader(new InputStreamReader(System.in));
