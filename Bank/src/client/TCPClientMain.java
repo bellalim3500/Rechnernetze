@@ -30,6 +30,7 @@ class TCPClient {
         BufferedReader inFromUser;
         BufferedWriter outToServer;
         BufferedReader inFromServer;
+        boolean headerDone = false;
         Socket clientSocket = new Socket("localhost", 6789);
         System.out.println("Client connected end with \"END\"");
         byte [] encodedReq;
@@ -54,14 +55,28 @@ class TCPClient {
             request = new KarteMessage(new MsgHeader(1, MsgType.KARTE, "1", "1", System.currentTimeMillis()), cardNo);
             encodedMsg = codec.encode(request);
 
-            // send encoded String + '\n' to signal end of String
-            outToServer.write(encodedMsg + "\n");
+            // send encoded String + '\r\n' to signal end of String
+            outToServer.write(encodedMsg + "\r\n");
             outToServer.flush();
             System.out.println("CardNo sent:\n" + encodedMsg);
 
             // read response
             while ((responseString = inFromServer.readLine()) != null) {
+                if (responseString.isEmpty()) {
+                    headerDone = true;
+                    break;
+                }
                 stringBuilder.append(responseString).append("\r\n");
+            }
+
+            if (!headerDone) {
+                System.out.println("Server disconnected before completing header");
+            }
+
+            String bodyLine = inFromServer.toString();
+
+            while (bodyLine != null) {
+                stringBuilder.append(bodyLine).append("\r\n");
             }
 
             response = codec.decode(stringBuilder);

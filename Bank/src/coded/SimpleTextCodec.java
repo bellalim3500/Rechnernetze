@@ -20,54 +20,54 @@ import messages.response.PinOkMessage;
 public final class SimpleTextCodec {
 
     public String encode(Message msg) {
-        String msgString;
-        
+        String msgBody;
+        String msgHeader = msg.header().toString();
 
         if (msg instanceof AbhebenReqMessage) {
             AbhebenReqMessage d = (AbhebenReqMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
 
         } else if (msg instanceof ByeMessage) {
             ByeMessage d = (ByeMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof HelloMessage) {
             HelloMessage d = (HelloMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof KarteMessage) {
             KarteMessage d = (KarteMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof KontostandReqMessage) {
             KontostandReqMessage d = (KontostandReqMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof PinMessage) {
             PinMessage d = (PinMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof AbhebenOkMessage) {
             AbhebenOkMessage d = (AbhebenOkMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof ErrorMessage) {
             ErrorMessage d = (ErrorMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof KarteOkMessage) {
             KarteOkMessage d = (KarteOkMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof KontostandMessage) {
             KontostandMessage d = (KontostandMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof PinOkMessage) {
             PinOkMessage d = (PinOkMessage) msg;
-            msgString = d.toString();
-            return  msgString;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
         }
         throw new IllegalArgumentException("Unsupported message type:" + msg.getClass());
     }
@@ -77,10 +77,11 @@ public final class SimpleTextCodec {
         String s = sb.toString();
         MsgHeader header;
         Message msg = null;
+        String headerLines[], bodyLines[];
 
         String[] parts = s.split("\r\n\r\n"); // should be 2 (header SP body); split at \r\n\r\n
-        String headerLines[] = parts[0].split("\r\n"); // splits lines of header
-        String bodyLines[] = parts[1].split("\r\n"); // splits lines of body
+        headerLines = parts[0].split("\r\n"); // splits lines of header
+        bodyLines = parts[1].split("\r\n"); // splits lines of body
 
         try {
             header = constructHeader(headerLines);
@@ -90,7 +91,6 @@ public final class SimpleTextCodec {
         }
 
         return msg;
-
     }
 
     public MsgHeader constructHeader(String headerLines[]) throws Exception {
@@ -145,7 +145,7 @@ public final class SimpleTextCodec {
             String command = part.split(" ")[0];
             String bodyFields[] = part.split(" ");
             bodyFields = Arrays.copyOfRange(bodyFields, 1, bodyFields.length); // remove first word
-          
+
             switch (command) {
                 case "ABHEBEN_REQ":
                     card = bodyFields[0];

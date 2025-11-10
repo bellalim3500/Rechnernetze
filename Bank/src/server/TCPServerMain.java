@@ -21,6 +21,7 @@ public class TCPServerMain {
         int clientPin;
         SimpleTextCodec codec = new SimpleTextCodec();
         Message clientMessage, response;
+        boolean headerDone = false;
 
         ServerSocket welcomeSocket = new ServerSocket(6789);
         System.out.println("Warte auf Client...");
@@ -38,16 +39,33 @@ public class TCPServerMain {
 
             clientEncodedBuilder = new StringBuilder();
             String line;
-            while ((line = inFromClient.readLine()) != "") {
+            while ((line = inFromClient.readLine()) != null) {
 
                 //usually you check if(line.isEmpty()) and break; but our messages are defined as header CRLF CRLF body 
                 //which produces an empty line. This would cause the body not beeing read
+
+                if (line.isEmpty()) {
+                    headerDone = true;
+                    break;
+                }
                 clientEncodedBuilder.append(line).append("\r\n");
+            }
+
+            if (!headerDone) {
+                System.out.println("Client disconnected before completing header");
+            }
+
+            String bodyLine;
+
+            // read body
+            while ((bodyLine = inFromClient.readLine()) != null && !bodyLine.isEmpty()) {
+                clientEncodedBuilder.append("\r\n");
+                clientEncodedBuilder.append(bodyLine).append("\r\n");
             }
 
             clientEncoded = clientEncodedBuilder.toString();
 
-            System.out.println("In from Client (encoded): " + clientEncoded);
+            System.out.println("In from Client (encoded):\n" + clientEncoded);
 
             clientMessage = codec.decode(clientEncodedBuilder);
             System.out.println("In from Client (decoded):\n" + clientMessage);
@@ -65,6 +83,7 @@ public class TCPServerMain {
             outToClient.flush();
 
         }
+
     }
 
 }

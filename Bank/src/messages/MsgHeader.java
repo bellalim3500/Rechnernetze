@@ -39,7 +39,7 @@ public class MsgHeader {
     @Override
     public String toString() {
         return String.format(
-                "Version: %d\r\nType: %s\r\nMsgId: %s\r\nCorrelationId: %s\r\nTimestamp in Millis: %d\r\n\r\n",
+                "Version: %d\r\nType: %s\r\nMsgId: %s\r\nCorrelationId: %s\r\nTimestamp in Millis: %d",
                 version, type, msgId, correlationId, timestampMillis);
     }
 
