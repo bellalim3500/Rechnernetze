@@ -16,10 +16,6 @@ import messages.request.PinMessage;
 class TCPClient {
     public static void main(String argv[]) throws Exception {
         final int MAXPINCOUNT = 3;
-        final int MINPIN = 4;
-        final int MAXPIN = 6;
-        final int MINCARD = 6;
-        final int MAXCARD = 20;
 
         String encodedMsg, responseString, menuInput, cardNo;
         StringBuilder stringBuilder = new StringBuilder();
@@ -73,9 +69,10 @@ class TCPClient {
                 System.out.println("Server disconnected before completing header");
             }
 
-            String bodyLine = inFromServer.toString();
+            String bodyLine;
 
-            while (bodyLine != null) {
+            while ((bodyLine  = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
+                stringBuilder.append("\r\n");
                 stringBuilder.append(bodyLine).append("\r\n");
             }
 
@@ -85,7 +82,7 @@ class TCPClient {
             // code continues TODO wrap everything with while?
             if (!response.header().type().equals("KARTE_OK")) {
                 System.out.println(response);
-
+            } else {
                 // TODO decide if we want to send a ByeMessage or just close socket and delete
                 // ByeMessage completely -> less work
 

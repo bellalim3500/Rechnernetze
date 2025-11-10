@@ -11,7 +11,6 @@ public class KarteMessage implements Message {
     public KarteMessage(MsgHeader header, String card) {
         this.header = header;
         this.card = card;
-
     }
 
     @Override

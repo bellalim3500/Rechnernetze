@@ -5,12 +5,19 @@ import java.net.*;
 import messages.Message;
 import messages.MsgHeader;
 import messages.MsgType;
+import messages.request.KarteMessage;
 import messages.request.PinMessage;
+import messages.response.KarteOkMessage;
 import messages.response.PinOkMessage;
 import coded.SimpleTextCodec;
 
 public class TCPServerMain {
     public static void main(String argv[]) throws Exception {
+
+        final int MINCARD = 6;
+        final int MAXCARD = 20;
+        final int MINPIN = 4;
+        final int MAXPIN = 6;
 
         // hardcoded for MsgType.PIN
         // TODO cascading cases, that send, check and answer messages according to Client-Logic
@@ -69,7 +76,20 @@ public class TCPServerMain {
 
             clientMessage = codec.decode(clientEncodedBuilder);
             System.out.println("In from Client (decoded):\n" + clientMessage);
+            
+            // is Karte Okay?
+            int cardLength = ((KarteMessage)clientMessage).card().length();
+            if (cardLength >= MINCARD && cardLength <= MAXCARD) {
+                response = new KarteOkMessage(new MsgHeader(1, MsgType.KARTE, "1", "1", System.currentTimeMillis()));
+                encodedResponse = codec.encode(response);
 
+                System.out.println("Out to Client:\n" + encodedResponse);
+                outToClient.write(encodedResponse + '\n');
+                outToClient.flush();
+            }
+
+
+            
             clientPin = ((PinMessage) clientMessage).pin();
 
             // logic to check pin
