@@ -12,6 +12,7 @@ public class UnitTest {
     // versions are equal
 
     public static void main(String argv[]){
+        StringBuilder stringBuilder = new StringBuilder();
         SimpleTextCodec codec = new SimpleTextCodec();
         MsgHeader msgHeader = new MsgHeader(101, MsgType.HELLO, "mathi", "mathi", System.currentTimeMillis());
         HelloMessage msg = new HelloMessage(msgHeader, "Hello Test");
@@ -23,7 +24,9 @@ public class UnitTest {
         String encoded = codec.encode(msg);
         System.out.println(encoded);
 
-        decoded = codec.decode(encoded);
+        stringBuilder.append(encoded).append("\r\n");
+
+        decoded = codec.decode(stringBuilder);
         System.out.println(decoded);
 
         if (msg.toString().equals(decoded.toString())) { // It's necessary to use toString(). I dont't know why since

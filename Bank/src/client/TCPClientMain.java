@@ -14,20 +14,16 @@ import messages.request.KontostandReqMessage;
 import messages.request.PinMessage;
 
 class TCPClient {
-    final static int MAXPINCOUNT = 3;
-    // final static int MINPIN = 4;
-    // final static int MAXPIN = 6;
-    // final static int MINCARD = 6;
-    // final static int MAXCARD = 20;
-
     public static void main(String argv[]) throws Exception {
+        final int MAXPINCOUNT = 3;
+        final int MINPIN = 4;
+        final int MAXPIN = 6;
+        final int MINCARD = 6;
+        final int MAXCARD = 20;
 
-        String encodedMsg;
-        String responseString;
-        String menuInput;
-        String cardNo;
-        Message response;
-        Message request;
+        String encodedMsg, responseString, menuInput, cardNo;
+        StringBuilder stringBuilder = new StringBuilder();
+        Message response, request;
         int pin;
         int pinCount = 0;
         SimpleTextCodec codec = new SimpleTextCodec(); // create codec
@@ -64,10 +60,11 @@ class TCPClient {
             System.out.println("CardNo sent:\n" + encodedMsg);
 
             // read response
-            // TODO decode is not working yet, since it's only reading the first line and
-            // then stops
-            responseString = inFromServer.readLine(); // probably won't work because more than one line
-            response = codec.decode(responseString);
+            while ((responseString = inFromServer.readLine()) != null) {
+                stringBuilder.append(responseString).append("\r\n");
+            }
+
+            response = codec.decode(stringBuilder);
 
             // Check if cardNo-Response is !OK, if so print ErrorMessage and break, if not
             // code continues TODO wrap everything with while?

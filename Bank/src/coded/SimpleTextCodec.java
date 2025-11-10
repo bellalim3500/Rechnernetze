@@ -72,9 +72,9 @@ public final class SimpleTextCodec {
         throw new IllegalArgumentException("Unsupported message type:" + msg.getClass());
     }
 
-    public Message decode(String s) {
+    public Message decode(StringBuilder sb) {
 
-
+        String s = sb.toString();
         MsgHeader header;
         Message msg = null;
 

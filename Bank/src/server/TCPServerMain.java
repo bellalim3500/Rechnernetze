@@ -16,13 +16,11 @@ public class TCPServerMain {
         // TODO cascading cases, that send, check and answer messages according to Client-Logic
         // TODO according to protocol-timeline e.g. only if(PIN_OK) its possible to send
         // KontostandMessage
-        String clientEncoded;
+        String clientEncoded, encodedResponse;
         StringBuilder clientEncodedBuilder;
         int clientPin;
-        String encodedResponse;
         SimpleTextCodec codec = new SimpleTextCodec();
-        Message clientMessage;
-        Message response;
+        Message clientMessage, response;
 
         ServerSocket welcomeSocket = new ServerSocket(6789);
         System.out.println("Warte auf Client...");
@@ -49,10 +47,9 @@ public class TCPServerMain {
 
             clientEncoded = clientEncodedBuilder.toString();
 
-            System.out.println("In from Client (encoded): " + clientEncoded); // TODO only reads first line and ignores
-                                                                              // everything else
+            System.out.println("In from Client (encoded): " + clientEncoded);
 
-            clientMessage = codec.decode(clientEncoded);
+            clientMessage = codec.decode(clientEncodedBuilder);
             System.out.println("In from Client (decoded):\n" + clientMessage);
 
             clientPin = ((PinMessage) clientMessage).pin();
