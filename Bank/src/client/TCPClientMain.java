@@ -31,8 +31,6 @@ class TCPClient {
         boolean headerDone = false;
         Socket clientSocket = new Socket("localhost", 6789);
         System.out.println("Client connected end with \"END\"");
-        byte[] encodedReq;
-        byte[] encodedRes;
 
         // user input
         inFromUser = new BufferedReader(new InputStreamReader(System.in));
@@ -85,6 +83,7 @@ class TCPClient {
                 System.out.println(response);
             } else {
                 clientSocket.close();
+                System.out.println(response);
                 System.out.println("Connection closed");
                 break;
             }
@@ -224,6 +223,7 @@ class TCPClient {
             outToServer.flush();
             System.out.println("Bye-Message sent:\n" + encodedMsg);
             clientSocket.close();
+            break;
 
         }
     }

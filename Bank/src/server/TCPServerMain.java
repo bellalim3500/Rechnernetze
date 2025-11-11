@@ -38,10 +38,10 @@ public class TCPServerMain {
         
         
         ServerSocket welcomeSocket = new ServerSocket(6789);
-        System.out.println("Warte auf Client...");
 
         outer:
         while (true) {
+            System.out.println("Warte auf Client...");
 
             Socket connectionSocket = welcomeSocket.accept();
             System.out.printf("Client connected: %s%n", connectionSocket.getRemoteSocketAddress());
@@ -95,7 +95,6 @@ public class TCPServerMain {
                         "KARTE INVALID");
                 encodedResponse = codec.encode(response);
 
-                // doesn't fully work yet
                 System.out.println("Out to Client:\n" + encodedResponse);
                 outToClient.write(encodedResponse + '\n');
                 outToClient.flush();
