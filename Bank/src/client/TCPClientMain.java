@@ -13,6 +13,7 @@ import messages.request.KarteMessage;
 import messages.request.KontostandReqMessage;
 import messages.request.PinMessage;
 
+// TODO the message classes should only return their own toString not the headers as well
 class TCPClient {
     public static void main(String argv[]) throws Exception {
         final int MAXPINCOUNT = 3;
@@ -29,9 +30,8 @@ class TCPClient {
         boolean headerDone = false;
         Socket clientSocket = new Socket("localhost", 6789);
         System.out.println("Client connected end with \"END\"");
-        byte [] encodedReq;
-        byte [] encodedRes;
-
+        byte[] encodedReq;
+        byte[] encodedRes;
 
         // user input
         inFromUser = new BufferedReader(new InputStreamReader(System.in));
@@ -71,7 +71,7 @@ class TCPClient {
 
             String bodyLine;
 
-            while ((bodyLine  = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
+            while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
                 stringBuilder.append("\r\n");
                 stringBuilder.append(bodyLine).append("\r\n");
             }
@@ -107,24 +107,51 @@ class TCPClient {
                 pinCount++;
 
                 // read and decode answer
-                // TODO
+                stringBuilder.setLength(0);
+                responseString = null;
+                bodyLine = null;
+
+                // read response
+                while ((responseString = inFromServer.readLine()) != null) {
+                    if (responseString.isEmpty()) {
+                        headerDone = true;
+                        break;
+                    }
+                    stringBuilder.append(responseString).append("\r\n");
+                }
+
+                if (!headerDone) {
+                    System.out.println("Server disconnected before completing header");
+                }
+
+                while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
+                    stringBuilder.append("\r\n");
+                    stringBuilder.append(bodyLine).append("\r\n");
+                }
+
+                response = codec.decode(stringBuilder);
 
             } while (response.header().type().equals("ERROR") && pinCount < MAXPINCOUNT);
 
-            // if pin is entered wrong 3 times print ErrorMessage and break, if not code
-            // continues
+            // TODO make sure that pin MAXINCOUNT works
+            // if pin is entered wrong 3 times print ErrorMessage and break, if not code continues
             if (pinCount == MAXPINCOUNT) {
 
                 System.out.println(response);
                 clientSocket.close();
                 System.out.println("Connection closed");
                 break;
+            } else {
+                System.out.println(response);
             }
 
             // present menu Options, read menuInput from user
             do {
-                System.err.println("What do you want to do? < balance | withdrawal | quit > ");
-                menuInput = inFromUser.readLine();
+                
+                do {
+                    System.err.println("What do you want to do? < balance | withdrawal | quit > ");
+                    menuInput = inFromUser.readLine();
+                } while (!menuInput.equals("balance") || !menuInput.equals("withdrawl") || !menuInput.equals("quit"));
 
                 // switch different menuOptions
 
@@ -141,7 +168,7 @@ class TCPClient {
 
                         // TODO response
 
-                        break; //break so menu question is asked again. should return to beginning of do{}
+                        break; // break so menu question is asked again. should return to beginning of do{}
 
                     case "withdrawal":
 
@@ -175,7 +202,6 @@ class TCPClient {
             outToServer.flush();
             System.out.println("Bye-Message sent:\n" + encodedMsg);
             clientSocket.close();
-            
 
         }
     }

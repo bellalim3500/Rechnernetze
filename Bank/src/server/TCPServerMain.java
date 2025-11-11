@@ -7,20 +7,22 @@ import messages.MsgHeader;
 import messages.MsgType;
 import messages.request.KarteMessage;
 import messages.request.PinMessage;
+import messages.response.ErrorMessage;
 import messages.response.KarteOkMessage;
 import messages.response.PinOkMessage;
 import coded.SimpleTextCodec;
 
 public class TCPServerMain {
     public static void main(String argv[]) throws Exception {
-
+        // TODO make sure that PIN INVALID and KARTE INVALID work
         final int MINCARD = 6;
         final int MAXCARD = 20;
         final int MINPIN = 4;
         final int MAXPIN = 6;
 
         // hardcoded for MsgType.PIN
-        // TODO cascading cases, that send, check and answer messages according to Client-Logic
+        // TODO cascading cases, that send, check and answer messages according to
+        // Client-Logic
         // TODO according to protocol-timeline e.g. only if(PIN_OK) its possible to send
         // KontostandMessage
         String clientEncoded, encodedResponse;
@@ -48,8 +50,9 @@ public class TCPServerMain {
             String line;
             while ((line = inFromClient.readLine()) != null) {
 
-                //usually you check if(line.isEmpty()) and break; but our messages are defined as header CRLF CRLF body 
-                //which produces an empty line. This would cause the body not beeing read
+                // usually you check if(line.isEmpty()) and break; but our messages are defined
+                // as header CRLF CRLF body
+                // which produces an empty line. This would cause the body not beeing read
 
                 if (line.isEmpty()) {
                     headerDone = true;
@@ -76,25 +79,61 @@ public class TCPServerMain {
 
             clientMessage = codec.decode(clientEncodedBuilder);
             System.out.println("In from Client (decoded):\n" + clientMessage);
-            
+
             // is Karte Okay?
-            int cardLength = ((KarteMessage)clientMessage).card().length();
+            int cardLength = ((KarteMessage) clientMessage).card().length();
             if (cardLength >= MINCARD && cardLength <= MAXCARD) {
                 response = new KarteOkMessage(new MsgHeader(1, MsgType.KARTE, "1", "1", System.currentTimeMillis()));
-                encodedResponse = codec.encode(response);
-
-                System.out.println("Out to Client:\n" + encodedResponse);
-                outToClient.write(encodedResponse + '\n');
-                outToClient.flush();
+            } else {
+                response = new ErrorMessage(new MsgHeader(1, MsgType.ERROR, "0", "0", System.currentTimeMillis()), "KARTE INVALID");
             }
 
+            encodedResponse = codec.encode(response);
 
-            
+            System.out.println("Out to Client:\n" + encodedResponse);
+            outToClient.write(encodedResponse + '\n');
+            outToClient.flush();
+
+            // Reading in from client TODO should be in a method
+            clientEncodedBuilder.setLength(0);
+            line = null;
+            bodyLine = null;
+
+            while ((line = inFromClient.readLine()) != null) {
+
+                if (line.isEmpty()) {
+                    headerDone = true;
+                    break;
+                }
+                clientEncodedBuilder.append(line).append("\r\n");
+            }
+
+            if (!headerDone) {
+                System.out.println("Client disconnected before completing header");
+            }
+
+            while ((bodyLine = inFromClient.readLine()) != null && !bodyLine.isEmpty()) {
+                clientEncodedBuilder.append("\r\n");
+                clientEncodedBuilder.append(bodyLine).append("\r\n");
+            }
+
+            clientEncoded = clientEncodedBuilder.toString();
+
+            System.out.println("In from Client (encoded):\n" + clientEncoded);
+
+            clientMessage = codec.decode(clientEncodedBuilder);
+
+            // create client pin
             clientPin = ((PinMessage) clientMessage).pin();
 
-            // logic to check pin
+            // check pin
+            int pinLength = ((PinMessage) clientMessage).pinLength();
+            if (pinLength >= MINPIN && pinLength <= MAXCARD) {
+                response = new PinOkMessage(new MsgHeader(1, MsgType.PIN_OK, "0", "0", System.currentTimeMillis()));
+            } else {
+                response = new ErrorMessage(new MsgHeader(1, MsgType.ERROR, "0", "0", System.currentTimeMillis()), "PIN INVALID");
+            }
 
-            response = new PinOkMessage(new MsgHeader(1, MsgType.PIN_OK, "0", "0", System.currentTimeMillis()));
             encodedResponse = codec.encode(response);
 
             System.out.println("Out to Client:\n" + encodedResponse);

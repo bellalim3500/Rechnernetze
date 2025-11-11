@@ -169,7 +169,7 @@ public final class SimpleTextCodec {
                     msg = new KontostandReqMessage(header, card);
                     break;
                 case "PIN":
-                    pin = Integer.parseInt(bodyFields[1]);
+                    pin = Integer.parseInt(bodyFields[0]);
                     msg = new PinMessage(header, pin);
                     break;
                 case "ABHEBEN_OK":
