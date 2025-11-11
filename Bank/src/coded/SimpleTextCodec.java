@@ -139,6 +139,7 @@ public final class SimpleTextCodec {
         int pin = 0;
         String reason = null;
         Message msg = null;
+        String normalized = null;
 
         for (String part : bodyLines) {
 
@@ -149,7 +150,8 @@ public final class SimpleTextCodec {
             switch (command) {
                 case "ABHEBEN_REQ":
                     card = bodyFields[0];
-                    amount = Double.parseDouble(bodyFields[1]);
+                    normalized = bodyFields[1].replace(",",".");
+                    amount = Double.parseDouble(normalized);
                     msg = new AbhebenReqMessage(header, card, amount);
                     break;
                 case "BYE":
@@ -173,7 +175,8 @@ public final class SimpleTextCodec {
                     msg = new PinMessage(header, pin);
                     break;
                 case "ABHEBEN_OK":
-                    amount = Double.parseDouble(bodyFields[1]);
+                    normalized = bodyFields[0].replace(",",".");
+                    amount = Double.parseDouble(normalized);
                     msg = new AbhebenOkMessage(header, amount);
                     break;
                 case "ERROR":
@@ -184,7 +187,8 @@ public final class SimpleTextCodec {
                     msg = new KarteOkMessage(header);
                     break;
                 case "KONTOSTAND":
-                    amount = Double.parseDouble(bodyFields[1]);
+                    normalized = bodyFields[0].replace(",",".");
+                    amount = Double.parseDouble(normalized);
                     msg = new KontostandMessage(header, amount);
                     break;
                 case "PIN_OK":

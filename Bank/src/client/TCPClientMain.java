@@ -131,10 +131,11 @@ class TCPClient {
 
                 response = codec.decode(stringBuilder);
 
-            } while (response.header().type().equals("ERROR") && pinCount < MAXPINCOUNT);
+            } while (response.header().type().equals(MsgType.ERROR) && pinCount < MAXPINCOUNT);
 
             // TODO make sure that pin MAXINCOUNT works
-            // if pin is entered wrong 3 times print ErrorMessage and break, if not code continues
+            // if pin is entered wrong 3 times print ErrorMessage and break, if not code
+            // continues
             if (pinCount == MAXPINCOUNT) {
 
                 System.out.println(response);
@@ -147,11 +148,11 @@ class TCPClient {
 
             // present menu Options, read menuInput from user
             do {
-                
+
                 do {
                     System.err.println("What do you want to do? < balance | withdrawal | quit > ");
                     menuInput = inFromUser.readLine();
-                } while (!menuInput.equals("balance") || !menuInput.equals("withdrawl") || !menuInput.equals("quit"));
+                } while (!(menuInput.toLowerCase().equals("balance") || menuInput.toLowerCase().equals("withdrawl") || menuInput.toLowerCase().equals("quit")));
 
                 // switch different menuOptions
 
@@ -159,14 +160,39 @@ class TCPClient {
                     case "balance":
 
                         request = new KontostandReqMessage(
-                                new MsgHeader(1, MsgType.PIN, "1", "1", System.currentTimeMillis()),
+                                new MsgHeader(1, MsgType.KONTOSTAND_REQ, "1", "1", System.currentTimeMillis()),
                                 cardNo);
                         encodedMsg = codec.encode(request);
                         outToServer.write(encodedMsg + "\n");
                         outToServer.flush();
                         System.out.println("Request sent:\n" + encodedMsg);
 
-                        // TODO response
+                        // read and decode answer
+                        stringBuilder.setLength(0);
+                        responseString = null;
+                        bodyLine = null;
+
+                        // read response
+                        while ((responseString = inFromServer.readLine()) != null) {
+                            if (responseString.isEmpty()) {
+                                headerDone = true;
+                                break;
+                            }
+                            stringBuilder.append(responseString).append("\r\n");
+                        }
+
+                        if (!headerDone) {
+                            System.out.println("Server disconnected before completing header");
+                        }
+
+                        while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
+                            stringBuilder.append("\r\n");
+                            stringBuilder.append(bodyLine).append("\r\n");
+                        }
+
+                        response = codec.decode(stringBuilder);
+
+                        System.out.println(response);
 
                         break; // break so menu question is asked again. should return to beginning of do{}
 
@@ -176,23 +202,42 @@ class TCPClient {
                         double reqAmount = Double.parseDouble(inFromUser.readLine());
 
                         request = new AbhebenReqMessage(
-                                new MsgHeader(1, MsgType.PIN, "1", "1", System.currentTimeMillis()),
+                                new MsgHeader(1, MsgType.ABHEBEN_REQ, "1", "1", System.currentTimeMillis()),
                                 cardNo, reqAmount);
                         encodedMsg = codec.encode(request);
                         outToServer.write(encodedMsg + "\n");
                         outToServer.flush();
                         System.out.println("Withdrawal-Request sent:\n" + encodedMsg);
 
-                        // TODO response
+                        // read response
+                        while ((responseString = inFromServer.readLine()) != null) {
+                            if (responseString.isEmpty()) {
+                                headerDone = true;
+                                break;
+                            }
+                            stringBuilder.append(responseString).append("\r\n");
+                        }
 
-                        // TODO switch-logic for ABHEBEN_OK and ERROR Response
+                        if (!headerDone) {
+                            System.out.println("Server disconnected before completing header");
+                        }
+
+                        while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
+                            stringBuilder.append("\r\n");
+                            stringBuilder.append(bodyLine).append("\r\n");
+                        }
+
+                        response = codec.decode(stringBuilder);
+
+                        // if it is an error the error will be printed and still exit switch but without recieving money
+                        System.out.println(response);
 
                         break;
 
                     default:
                         break;
                 }
-            } while (!menuInput.toLowerCase().equals("balance") || !menuInput.toLowerCase().equals("withdrawal"));
+            } while (!(menuInput.toLowerCase().equals("balance") || menuInput.toLowerCase().equals("withdrawal")));
             // not checking for "quit" so loop can be exited if menuInput="quit"
 
             // create byemessage
