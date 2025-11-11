@@ -81,12 +81,9 @@ class TCPClient {
 
             // Check if cardNo-Response is !OK, if so print ErrorMessage and break, if not
             // code continues TODO wrap everything with while?
-            if (!response.header().type().equals("KARTE_OK")) {
+            if (response.header().type() == MsgType.KARTE) {
                 System.out.println(response);
             } else {
-                // TODO decide if we want to send a ByeMessage or just close socket and delete
-                // ByeMessage completely -> less work
-
                 clientSocket.close();
                 System.out.println("Connection closed");
                 break;
@@ -218,6 +215,8 @@ class TCPClient {
                 System.out.println(response);
             } while (!(menuInput.toLowerCase().equals("quit")));
 
+            // TODO decide if we want to send a ByeMessage or just close socket and delete
+            // ByeMessage completely -> less work
             // create byemessage
             request = new ByeMessage(new MsgHeader(1, MsgType.BYE, "1", "1", System.currentTimeMillis()), "");
             encodedMsg = codec.encode(request);

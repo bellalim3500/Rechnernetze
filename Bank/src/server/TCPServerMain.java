@@ -35,10 +35,12 @@ public class TCPServerMain {
         SimpleTextCodec codec = new SimpleTextCodec();
         Message clientMessage, response;
         boolean headerDone = false;
-
+        
+        
         ServerSocket welcomeSocket = new ServerSocket(6789);
         System.out.println("Warte auf Client...");
 
+        outer:
         while (true) {
 
             Socket connectionSocket = welcomeSocket.accept();
@@ -91,6 +93,17 @@ public class TCPServerMain {
             } else {
                 response = new ErrorMessage(new MsgHeader(1, MsgType.ERROR, "0", "0", System.currentTimeMillis()),
                         "KARTE INVALID");
+                encodedResponse = codec.encode(response);
+
+                // doesn't fully work yet
+                System.out.println("Out to Client:\n" + encodedResponse);
+                outToClient.write(encodedResponse + '\n');
+                outToClient.flush();
+
+                outToClient.close();
+                inFromClient.close();
+                connectionSocket.close();
+                continue outer;
             }
 
             encodedResponse = codec.encode(response);
@@ -133,7 +146,7 @@ public class TCPServerMain {
 
             // check pin
             int pinLength = ((PinMessage) clientMessage).pinLength();
-            if (pinLength >= MINPIN && pinLength <= MAXCARD) {
+            if (pinLength >= MINPIN && pinLength <= MAXPIN) {
                 response = new PinOkMessage(new MsgHeader(1, MsgType.PIN_OK, "0", "0", System.currentTimeMillis()));
             } else {
                 response = new ErrorMessage(new MsgHeader(1, MsgType.ERROR, "0", "0", System.currentTimeMillis()),
