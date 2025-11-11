@@ -3,5 +3,5 @@ package messages;
 public enum MsgType {
     KARTE, OK, PIN, PIN_OK, KONTOSTAND_REQ,
     KONTOSTAND, ABHEBEN_REQ, ABHEBEN_OK, HELLO,
-    BYE, ERROR, TEXT
+    BYE, ERROR, TEXT, QUIT_REQ, QUIT
 }

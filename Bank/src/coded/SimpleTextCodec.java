@@ -11,11 +11,13 @@ import messages.request.HelloMessage;
 import messages.request.KarteMessage;
 import messages.request.KontostandReqMessage;
 import messages.request.PinMessage;
+import messages.request.QuitReq;
 import messages.response.AbhebenOkMessage;
 import messages.response.ErrorMessage;
 import messages.response.KarteOkMessage;
 import messages.response.KontostandMessage;
 import messages.response.PinOkMessage;
+import messages.response.Quit;
 
 public final class SimpleTextCodec {
 
@@ -66,6 +68,14 @@ public final class SimpleTextCodec {
             return msgHeader + "\r\n\r\n" + msgBody;
         } else if (msg instanceof PinOkMessage) {
             PinOkMessage d = (PinOkMessage) msg;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
+        } else if (msg instanceof QuitReq) {
+            QuitReq d = (QuitReq) msg;
+            msgBody = d.toString();
+            return msgHeader + "\r\n\r\n" + msgBody;
+        } else if (msg instanceof Quit) {
+            Quit d = (Quit) msg;
             msgBody = d.toString();
             return msgHeader + "\r\n\r\n" + msgBody;
         }
@@ -175,7 +185,7 @@ public final class SimpleTextCodec {
                     msg = new PinMessage(header, pin);
                     break;
                 case "ABHEBEN_OK":
-                    normalized = bodyFields[0].replace(",",".");
+                    normalized = bodyFields[1].replace(",",".");
                     amount = Double.parseDouble(normalized);
                     msg = new AbhebenOkMessage(header, amount);
                     break;
@@ -193,6 +203,12 @@ public final class SimpleTextCodec {
                     break;
                 case "PIN_OK":
                     msg = new PinOkMessage(header);
+                    break;
+                case "QUIT_REQ":
+                    msg = new QuitReq(header);
+                    break;
+                case "QUIT":
+                    msg = new Quit(header);
                     break;
                 default:
                     throw new Exception("Unsupported Body-Field");

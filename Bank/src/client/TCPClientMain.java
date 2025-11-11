@@ -12,6 +12,7 @@ import messages.request.ByeMessage;
 import messages.request.KarteMessage;
 import messages.request.KontostandReqMessage;
 import messages.request.PinMessage;
+import messages.request.QuitReq;
 
 // TODO the message classes should only return their own toString not the headers as well
 class TCPClient {
@@ -152,7 +153,8 @@ class TCPClient {
                 do {
                     System.err.println("What do you want to do? < balance | withdrawal | quit > ");
                     menuInput = inFromUser.readLine();
-                } while (!(menuInput.toLowerCase().equals("balance") || menuInput.toLowerCase().equals("withdrawl") || menuInput.toLowerCase().equals("quit")));
+                } while (!(menuInput.toLowerCase().equals("balance") || menuInput.toLowerCase().equals("withdrawal")
+                        || menuInput.toLowerCase().equals("quit")));
 
                 // switch different menuOptions
 
@@ -162,37 +164,6 @@ class TCPClient {
                         request = new KontostandReqMessage(
                                 new MsgHeader(1, MsgType.KONTOSTAND_REQ, "1", "1", System.currentTimeMillis()),
                                 cardNo);
-                        encodedMsg = codec.encode(request);
-                        outToServer.write(encodedMsg + "\n");
-                        outToServer.flush();
-                        System.out.println("Request sent:\n" + encodedMsg);
-
-                        // read and decode answer
-                        stringBuilder.setLength(0);
-                        responseString = null;
-                        bodyLine = null;
-
-                        // read response
-                        while ((responseString = inFromServer.readLine()) != null) {
-                            if (responseString.isEmpty()) {
-                                headerDone = true;
-                                break;
-                            }
-                            stringBuilder.append(responseString).append("\r\n");
-                        }
-
-                        if (!headerDone) {
-                            System.out.println("Server disconnected before completing header");
-                        }
-
-                        while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
-                            stringBuilder.append("\r\n");
-                            stringBuilder.append(bodyLine).append("\r\n");
-                        }
-
-                        response = codec.decode(stringBuilder);
-
-                        System.out.println(response);
 
                         break; // break so menu question is asked again. should return to beginning of do{}
 
@@ -204,41 +175,48 @@ class TCPClient {
                         request = new AbhebenReqMessage(
                                 new MsgHeader(1, MsgType.ABHEBEN_REQ, "1", "1", System.currentTimeMillis()),
                                 cardNo, reqAmount);
-                        encodedMsg = codec.encode(request);
-                        outToServer.write(encodedMsg + "\n");
-                        outToServer.flush();
-                        System.out.println("Withdrawal-Request sent:\n" + encodedMsg);
 
-                        // read response
-                        while ((responseString = inFromServer.readLine()) != null) {
-                            if (responseString.isEmpty()) {
-                                headerDone = true;
-                                break;
-                            }
-                            stringBuilder.append(responseString).append("\r\n");
-                        }
-
-                        if (!headerDone) {
-                            System.out.println("Server disconnected before completing header");
-                        }
-
-                        while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
-                            stringBuilder.append("\r\n");
-                            stringBuilder.append(bodyLine).append("\r\n");
-                        }
-
-                        response = codec.decode(stringBuilder);
-
-                        // if it is an error the error will be printed and still exit switch but without recieving money
-                        System.out.println(response);
-
+                        // if it is an error the error will be printed and still exit switch but without
                         break;
-
+                    case "quit":
+                        request = new QuitReq(new MsgHeader(1, MsgType.QUIT_REQ, "1", "1", System.currentTimeMillis()));
+                        break;
                     default:
                         break;
                 }
-            } while (!(menuInput.toLowerCase().equals("balance") || menuInput.toLowerCase().equals("withdrawal")));
-            // not checking for "quit" so loop can be exited if menuInput="quit"
+
+                encodedMsg = codec.encode(request);
+                outToServer.write(encodedMsg + "\n");
+                outToServer.flush();
+                System.out.println("Request sent:\n" + encodedMsg);
+
+                // read and decode answer
+                stringBuilder.setLength(0);
+                responseString = null;
+                bodyLine = null;
+
+                // read response
+                while ((responseString = inFromServer.readLine()) != null) {
+                    if (responseString.isEmpty()) {
+                        headerDone = true;
+                        break;
+                    }
+                    stringBuilder.append(responseString).append("\r\n");
+                }
+
+                if (!headerDone) {
+                    System.out.println("Server disconnected before completing header");
+                }
+
+                while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
+                    stringBuilder.append("\r\n");
+                    stringBuilder.append(bodyLine).append("\r\n");
+                }
+
+                response = codec.decode(stringBuilder);
+
+                System.out.println(response);
+            } while (!(menuInput.toLowerCase().equals("quit")));
 
             // create byemessage
             request = new ByeMessage(new MsgHeader(1, MsgType.BYE, "1", "1", System.currentTimeMillis()), "");
