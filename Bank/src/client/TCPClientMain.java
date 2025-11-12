@@ -14,13 +14,12 @@ import messages.request.KontostandReqMessage;
 import messages.request.PinMessage;
 import messages.request.QuitReq;
 
-// TODO the message classes should only return their own toString not the headers as well
+
 class TCPClient {
     public static void main(String argv[]) throws Exception {
         final int MAXPINCOUNT = 3;
 
-        String encodedMsg, responseString, menuInput, cardNo;
-        StringBuilder stringBuilder = new StringBuilder();
+        String encodedMsg, menuInput, cardNo;
         Message response, request;
         int pin;
         int pinCount = 0;
@@ -28,7 +27,6 @@ class TCPClient {
         BufferedReader inFromUser;
         BufferedWriter outToServer;
         BufferedReader inFromServer;
-        boolean headerDone = false;
         Socket clientSocket = new Socket("localhost", 6789);
         System.out.println("Client connected end with \"END\"");
 
@@ -55,30 +53,11 @@ class TCPClient {
             outToServer.flush();
             System.out.println("CardNo sent:\n" + encodedMsg);
 
-            // read response
-            while ((responseString = inFromServer.readLine()) != null) {
-                if (responseString.isEmpty()) {
-                    headerDone = true;
-                    break;
-                }
-                stringBuilder.append(responseString).append("\r\n");
-            }
+            //read response
+            
+            response =readResponse(inFromServer, codec);
 
-            if (!headerDone) {
-                System.out.println("Server disconnected before completing header");
-            }
-
-            String bodyLine;
-
-            while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
-                stringBuilder.append("\r\n");
-                stringBuilder.append(bodyLine).append("\r\n");
-            }
-
-            response = codec.decode(stringBuilder);
-
-            // Check if cardNo-Response is !OK, if so print ErrorMessage and break, if not
-            // code continues TODO wrap everything with while?
+            // Check if cardNo-Response is !OK, if so print ErrorMessage and break, if notcode continues 
             if (response.header().type() == MsgType.KARTE) {
                 System.out.println(response);
             } else {
@@ -88,8 +67,7 @@ class TCPClient {
                 break;
             }
 
-            // ask for pin, create msg and send TODO probably more elegant to write
-            // send()-method here. Problem are the various data types
+            // ask for pin, create msg and send 
             // loop for incorrect pin
             do {
 
@@ -103,36 +81,13 @@ class TCPClient {
                 // increase pinCount to limit to three attempts
                 pinCount++;
 
-                // read and decode answer
-                stringBuilder.setLength(0);
-                responseString = null;
-                bodyLine = null;
-
-                // read response
-                while ((responseString = inFromServer.readLine()) != null) {
-                    if (responseString.isEmpty()) {
-                        headerDone = true;
-                        break;
-                    }
-                    stringBuilder.append(responseString).append("\r\n");
-                }
-
-                if (!headerDone) {
-                    System.out.println("Server disconnected before completing header");
-                }
-
-                while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
-                    stringBuilder.append("\r\n");
-                    stringBuilder.append(bodyLine).append("\r\n");
-                }
-
-                response = codec.decode(stringBuilder);
+                // read and decode answe
+                response=readResponse(inFromServer, codec);
 
             } while (response.header().type().equals(MsgType.ERROR) && pinCount < MAXPINCOUNT);
 
-            // TODO make sure that pin MAXINCOUNT works
-            // if pin is entered wrong 3 times print ErrorMessage and break, if not code
-            // continues
+            
+            // if pin is entered wrong 3 times print ErrorMessage and break, if not code continues
             if (pinCount == MAXPINCOUNT) {
 
                 System.out.println(response);
@@ -187,35 +142,12 @@ class TCPClient {
                 System.out.println("Request sent:\n" + encodedMsg);
 
                 // read and decode answer
-                stringBuilder.setLength(0);
-                responseString = null;
-                bodyLine = null;
+                response=readResponse(inFromServer, codec);
 
-                // read response
-                while ((responseString = inFromServer.readLine()) != null) {
-                    if (responseString.isEmpty()) {
-                        headerDone = true;
-                        break;
-                    }
-                    stringBuilder.append(responseString).append("\r\n");
-                }
-
-                if (!headerDone) {
-                    System.out.println("Server disconnected before completing header");
-                }
-
-                while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
-                    stringBuilder.append("\r\n");
-                    stringBuilder.append(bodyLine).append("\r\n");
-                }
-
-                response = codec.decode(stringBuilder);
-
-                System.out.println(response);
+               
             } while (!(menuInput.toLowerCase().equals("quit")));
 
-            // TODO decide if we want to send a ByeMessage or just close socket and delete
-            // ByeMessage completely -> less work
+          
             // create byemessage
             request = new ByeMessage(new MsgHeader(1, MsgType.BYE, "1", "1", System.currentTimeMillis()), "");
             encodedMsg = codec.encode(request);
@@ -227,5 +159,35 @@ class TCPClient {
 
         }
     }
+
+
+    private static Message readResponse(BufferedReader inFromServer, SimpleTextCodec codec) throws IOException {
+    StringBuilder stringBuilder = new StringBuilder();
+    String responseString;
+    boolean headerDone = false;
+
+
+    while ((responseString = inFromServer.readLine()) != null) {
+        if (responseString.isEmpty()) {
+            headerDone = true;
+            break;
+        }
+        stringBuilder.append(responseString).append("\r\n");
+    }
+
+    if (!headerDone) {
+        System.out.println("[WARN] Server disconnected before completing header");
+    }
+
+    String bodyLine;
+    while ((bodyLine = inFromServer.readLine()) != null && !bodyLine.isEmpty()) {
+        stringBuilder.append("\r\n");
+        stringBuilder.append(bodyLine).append("\r\n");
+    }
+
+
+    return codec.decode(stringBuilder);
+     
+}
 
 }

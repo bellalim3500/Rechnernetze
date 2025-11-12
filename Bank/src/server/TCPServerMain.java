@@ -24,23 +24,15 @@ public class TCPServerMain {
         final int MINPIN = 4;
         final int MAXPIN = 6;
 
-        // hardcoded for MsgType.PIN
-        // TODO cascading cases, that send, check and answer messages according to
-        // Client-Logic
-        // TODO according to protocol-timeline e.g. only if(PIN_OK) its possible to send
-        // KontostandMessage
-        String clientEncoded, encodedResponse;
-        StringBuilder clientEncodedBuilder;
-        int clientPin;
+        String encodedResponse;
+
         SimpleTextCodec codec = new SimpleTextCodec();
         Message clientMessage, response;
         boolean headerDone = false;
-        
-        
+
         ServerSocket welcomeSocket = new ServerSocket(6789);
 
-        outer:
-        while (true) {
+        outer: while (true) {
             System.out.println("Warte auf Client...");
 
             Socket connectionSocket = welcomeSocket.accept();
@@ -52,38 +44,7 @@ public class TCPServerMain {
             BufferedWriter outToClient = new BufferedWriter(new OutputStreamWriter(
                     connectionSocket.getOutputStream()));
 
-            clientEncodedBuilder = new StringBuilder();
-            String line;
-            while ((line = inFromClient.readLine()) != null) {
-
-                // usually you check if(line.isEmpty()) and break; but our messages are defined
-                // as header CRLF CRLF body
-                // which produces an empty line. This would cause the body not beeing read
-
-                if (line.isEmpty()) {
-                    headerDone = true;
-                    break;
-                }
-                clientEncodedBuilder.append(line).append("\r\n");
-            }
-
-            if (!headerDone) {
-                System.out.println("Client disconnected before completing header");
-            }
-
-            String bodyLine;
-
-            // read body
-            while ((bodyLine = inFromClient.readLine()) != null && !bodyLine.isEmpty()) {
-                clientEncodedBuilder.append("\r\n");
-                clientEncodedBuilder.append(bodyLine).append("\r\n");
-            }
-
-            clientEncoded = clientEncodedBuilder.toString();
-
-            System.out.println("In from Client (encoded):\n" + clientEncoded);
-
-            clientMessage = codec.decode(clientEncodedBuilder);
+            clientMessage = readResponse(inFromClient, codec);
             System.out.println("In from Client (decoded):\n" + clientMessage);
 
             // is Karte Okay?
@@ -111,37 +72,9 @@ public class TCPServerMain {
             outToClient.write(encodedResponse + '\n');
             outToClient.flush();
 
-            // Reading in from client TODO should be in a method
-            clientEncodedBuilder.setLength(0);
-            line = null;
-            bodyLine = null;
-
-            while ((line = inFromClient.readLine()) != null) {
-
-                if (line.isEmpty()) {
-                    headerDone = true;
-                    break;
-                }
-                clientEncodedBuilder.append(line).append("\r\n");
-            }
-
-            if (!headerDone) {
-                System.out.println("Client disconnected before completing header");
-            }
-
-            while ((bodyLine = inFromClient.readLine()) != null && !bodyLine.isEmpty()) {
-                clientEncodedBuilder.append("\r\n");
-                clientEncodedBuilder.append(bodyLine).append("\r\n");
-            }
-
-            clientEncoded = clientEncodedBuilder.toString();
-
-            System.out.println("In from Client (encoded):\n" + clientEncoded);
-
-            clientMessage = codec.decode(clientEncodedBuilder);
-
+            // Reading in from client
+            clientMessage = readResponse(inFromClient, codec);
             // create client pin
-            clientPin = ((PinMessage) clientMessage).pin();
 
             // check pin
             int pinLength = ((PinMessage) clientMessage).pinLength();
@@ -160,35 +93,8 @@ public class TCPServerMain {
             outToClient.flush();
 
             do {
-                // read in Balance or Withdrawal message
-                // Reading in from client TODO should be in a method
-                clientEncodedBuilder.setLength(0);
-                line = null;
-                bodyLine = null;
 
-                while ((line = inFromClient.readLine()) != null) {
-
-                    if (line.isEmpty()) {
-                        headerDone = true;
-                        break;
-                    }
-                    clientEncodedBuilder.append(line).append("\r\n");
-                }
-
-                if (!headerDone) {
-                    System.out.println("Client disconnected before completing header");
-                }
-
-                while ((bodyLine = inFromClient.readLine()) != null && !bodyLine.isEmpty()) {
-                    clientEncodedBuilder.append("\r\n");
-                    clientEncodedBuilder.append(bodyLine).append("\r\n");
-                }
-
-                clientEncoded = clientEncodedBuilder.toString();
-
-                System.out.println("In from Client (encoded):\n" + clientEncoded);
-
-                clientMessage = codec.decode(clientEncodedBuilder);
+                clientMessage = readResponse(inFromClient, codec);
 
                 // Check which type of message was sent and create a response message based on
                 // that
@@ -215,6 +121,35 @@ public class TCPServerMain {
             } while (!(response instanceof Quit));
 
         }
+
+    }
+
+    private static Message readResponse(BufferedReader inFromClient, SimpleTextCodec codec) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        String responseString;
+        boolean headerDone = false;
+
+        while ((responseString = inFromClient.readLine()) != null) {
+            if (responseString.isEmpty()) {
+                headerDone = true;
+                break;
+            }
+            stringBuilder.append(responseString).append("\r\n");
+        }
+
+        if (!headerDone) {
+            System.out.println("[WARN] Server disconnected before completing header");
+        }
+
+        String bodyLine;
+        while ((bodyLine = inFromClient.readLine()) != null && !bodyLine.isEmpty()) {
+            stringBuilder.append("\r\n");
+            stringBuilder.append(bodyLine).append("\r\n");
+        }
+
+        System.out.println(stringBuilder);
+
+        return codec.decode(stringBuilder);
 
     }
 
