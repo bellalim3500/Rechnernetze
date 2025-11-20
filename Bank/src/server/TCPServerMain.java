@@ -129,6 +129,7 @@ public class TCPServerMain {
         String responseString;
         boolean headerDone = false;
 
+        
         while ((responseString = inFromClient.readLine()) != null) {
             if (responseString.isEmpty()) {
                 headerDone = true;
